@@ -4,9 +4,12 @@ import { Task } from "./task.entity";
 import { TaskStatus } from "./tasks.enum";
 import { FilterTaskDTO } from "./dto/get-task.dto";
 import { User } from "src/auth/user.entity";
+import { InternalServerErrorException, Logger } from "@nestjs/common";
 
 
 export class TasksRepository extends Repository<Task> {
+  private logger = new Logger();
+
   constructor(
     @InjectRepository(Task)
     private taskRepository: Repository<Task>,
@@ -34,12 +37,18 @@ export class TasksRepository extends Repository<Task> {
       )
     }
 
-    const tasks = await query.getMany();
-    return tasks;
+    try {
+      const tasks = await query.getMany();
+      return tasks;
+    }
+    catch (error) {
+      this.logger.error(`Failed to load task for User : ${user.username}.`, error.stack,);
+      this.serverErrorExceptionMethod('')
+    }
   }
 
-  public getTaskById(id: string,user:User): Promise<Task> {
-    return this.taskRepository.findOne({ where: { id,user }, });
+  public getTaskById(id: string, user: User): Promise<Task> {
+    return this.taskRepository.findOne({ where: { id, user }, });
   }
 
   public saveTask(result: Task): Promise<Task> {
@@ -56,7 +65,11 @@ export class TasksRepository extends Repository<Task> {
     return this.saveTask(task);
   }
 
-  public deleteTask(id: string,user) {
-    return this.taskRepository.delete({id,user});
+  public deleteTask(id: string, user) {
+    return this.taskRepository.delete({ id, user });
+  }
+
+  private serverErrorExceptionMethod(message) {
+    throw new InternalServerErrorException(message);
   }
 }
