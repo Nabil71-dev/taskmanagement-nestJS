@@ -3,7 +3,7 @@ import { Repository } from "typeorm";
 import { Task } from "./task.entity";
 import { TaskStatus } from "./tasks.enum";
 import { FilterTaskDTO } from "./dto/get-task.dto";
-import { User } from "src/auth/user.entity";
+import { User } from "../auth/user.entity";
 import { InternalServerErrorException, Logger } from "@nestjs/common";
 
 
